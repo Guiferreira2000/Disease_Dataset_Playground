@@ -3,3 +3,6 @@
 *.csv
 *.json
 *.jsonl
+*.txt
+/log/*
+Dataset_accuracy_06_08_2023
