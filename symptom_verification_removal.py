@@ -2,19 +2,27 @@ import pandas as pd
 import json
 import os
 
+# Logs the wrongly analyzed symptoms.
+# Stores and retrieves user inputs in case of interruptions.
+# Continues from where it left off using stored user inputs without prompting the user again.
+
 # Load the Excel file and the JSON file
-df = pd.read_excel('/home/guilherme/Documents/Tese/Dataset_Open_AI/draft.xlsx')
-with open('/home/guilherme/Documents/Tese/Dataset_Open_AI/diseases_with_mismatched_symptoms_v2.json') as f:
+df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/draft.xlsx')
+with open('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/diseases_with_mismatched_symptoms_v2.json') as f:
     mismatched_symptoms_data = json.load(f)
 
 # Create a copy of the DataFrame
 df_copy = df.copy()
 
-# Load the last completed index from the checkpoint file if it exists
+# Load the last completed index and user inputs from the checkpoint files if they exist
 last_completed_index = 0
+user_inputs = {}
 if os.path.exists('last_completed_index.txt'):
     with open('last_completed_index.txt', 'r') as f:
         last_completed_index = int(f.read())
+if os.path.exists('user_inputs.json'):
+    with open('user_inputs.json', 'r') as f:
+        user_inputs = json.load(f)
 
 # Initialize the incident log
 incident_log = []
@@ -41,9 +49,13 @@ for i in range(last_completed_index, len(mismatched_symptoms_data)):
     print(f"All Symptoms: {all_symptoms}")
     print(f"Mismatched Symptoms: {', '.join(mismatched_symptoms)}")
     
-    # Ask the user whether to remove the mismatched symptoms
-    user_input = input("Do you want to remove all mismatched symptoms? (y/n) If you want to keep some symptoms, type 'y' followed by the indices of the symptoms to keep (e.g., 'y02' to keep the first and third symptom): ")
-    
+    # If user input for this disease is already stored, use it. Otherwise, ask the user.
+    if disease in user_inputs:
+        user_input = user_inputs[disease]
+    else:
+        user_input = input("Do you want to remove all mismatched symptoms? (y/n) If you want to keep some symptoms, type 'y' followed by the indices of the symptoms to keep (e.g., 'y02' to keep the first and third symptom): ")
+        user_inputs[disease] = user_input  # Store the user input
+
     # If the user provides an invalid input, assume 'n'
     if user_input.lower() not in ['y', 'n'] and not user_input.lower().startswith('y'):
         user_input = 'n'
@@ -65,7 +77,8 @@ for i in range(last_completed_index, len(mismatched_symptoms_data)):
 
     final_symptoms = df_copy[df_copy['Disease'] == disease].iloc[0]['Symptom_1':'Symptom_25'].dropna().tolist()
 
-    if set(expected_symptoms) != set(final_symptoms):
+    wrongly_analyzed_symptoms = list(set(expected_symptoms) - set(final_symptoms))
+    if wrongly_analyzed_symptoms or set(expected_symptoms) != set(final_symptoms):
         accuracy_rate = len(set(expected_symptoms).intersection(set(final_symptoms))) / len(set(expected_symptoms)) * 100
         incident_log.append({
             'Disease': disease,
@@ -74,15 +87,18 @@ for i in range(last_completed_index, len(mismatched_symptoms_data)):
             'Mismatched Symptoms': mismatched_symptoms,
             'Expected Symptoms': expected_symptoms,
             'Final Symptoms': final_symptoms,
+            'Wrongly Analyzed Symptoms': wrongly_analyzed_symptoms,
             'Accuracy Rate': f"{accuracy_rate:.2f}%"
         })
 
-    # Save the current index to the checkpoint file
+    # Save the current index and user inputs to the checkpoint files
     with open('last_completed_index.txt', 'w') as f:
         f.write(str(i))
+    with open('user_inputs.json', 'w') as f:
+        json.dump(user_inputs, f)
 
     # Save the current state of the DataFrame to the Excel file
-    df_copy.to_excel('/home/guilherme/Documents/Tese/Dataset_Open_AI/Disease_Dataset_Verified.xlsx', index=False)
+    df_copy.to_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Disease_Dataset_Verified.xlsx', index=False)
 
 # Reorder the symptom columns for each disease
 for index, row in df_copy.iterrows():
@@ -93,14 +109,14 @@ for index, row in df_copy.iterrows():
         df_copy.at[index, f'Symptom_{i}'] = None
 
 # Save the modified DataFrame to a new Excel file
-df_copy.to_excel('/home/guilherme/Documents/Tese/Dataset_Open_AI/Disease_Dataset_Verified.xlsx', index=False)
+df_copy.to_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Disease_Dataset_Verified.xlsx', index=False)
 
 # Ensure the logs directory exists
-if not os.path.exists('/home/guilherme/Documents/Tese/Dataset_Open_AI/logs/'):
-    os.makedirs('/home/guilherme/Documents/Tese/Dataset_Open_AI/logs/')
+if not os.path.exists('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/logs/'):
+    os.makedirs('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/logs/')
 
 # Save the incident log to a file
-with open('/home/guilherme/Documents/Tese/Dataset_Open_AI/logs/incident_log.txt', 'w') as f:
+with open('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/logs/incident_log.txt', 'w') as f:
     for incident in incident_log:
         f.write(f"Disease: {incident['Disease']}\n")
         f.write(f"Initial Symptoms: {', '.join(incident['Initial Symptoms'])}\n")
@@ -108,14 +124,16 @@ with open('/home/guilherme/Documents/Tese/Dataset_Open_AI/logs/incident_log.txt'
         f.write(f"Mismatched Symptoms: {', '.join(incident['Mismatched Symptoms'])}\n")
         f.write(f"Expected Symptoms: {', '.join(incident['Expected Symptoms'])}\n")
         f.write(f"Final Symptoms: {', '.join(incident['Final Symptoms'])}\n")
+        f.write(f"Wrongly Analyzed Symptoms: {', '.join(incident['Wrongly Analyzed Symptoms'])}\n")
         f.write(f"Accuracy Rate: {incident['Accuracy Rate']}\n")
         f.write('-' * 100 + '\n')
 
 # Inform the user if any incidents were logged
 if incident_log:
-    print(f"{len(incident_log)} incidents were logged. Please check '/home/guilherme/Documents/Tese/Dataset_Open_AI/logs/incident_log.txt' for details.")
+    print(f"{len(incident_log)} incidents were logged. Please check '/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/logs/incident_log.txt' for details.")
 else:
     print("No incidents were logged.")
 
-# Delete the checkpoint file
+# Delete the checkpoint files
 os.remove('last_completed_index.txt')
+os.remove('user_inputs.json')
