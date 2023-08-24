@@ -2,10 +2,6 @@ import pandas as pd
 import json
 import os
 
-# Logs the wrongly analyzed symptoms.
-# Stores and retrieves user inputs in case of interruptions.
-# Continues from where it left off using stored user inputs without prompting the user again.
-
 # Load the Excel file and the JSON file
 df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/draft.xlsx')
 with open('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/diseases_with_mismatched_symptoms_v2.json') as f:
@@ -14,12 +10,8 @@ with open('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/diseases_with_m
 # Create a copy of the DataFrame
 df_copy = df.copy()
 
-# Load the last completed index and user inputs from the checkpoint files if they exist
-last_completed_index = 0
+# Load user inputs from the checkpoint file if it exists
 user_inputs = {}
-if os.path.exists('last_completed_index.txt'):
-    with open('last_completed_index.txt', 'r') as f:
-        last_completed_index = int(f.read())
 if os.path.exists('user_inputs.json'):
     with open('user_inputs.json', 'r') as f:
         user_inputs = json.load(f)
@@ -27,9 +19,8 @@ if os.path.exists('user_inputs.json'):
 # Initialize the incident log
 incident_log = []
 
-# Iterate over the diseases in the JSON file
-for i in range(last_completed_index, len(mismatched_symptoms_data)):
-    disease_data = mismatched_symptoms_data[i]
+# Phase 1: Collect user inputs for each disease
+for disease_data in mismatched_symptoms_data:
     disease = disease_data['Disease']
 
     # Check if the disease exists in the DataFrame
@@ -50,11 +41,18 @@ for i in range(last_completed_index, len(mismatched_symptoms_data)):
     print(f"Mismatched Symptoms: {', '.join(mismatched_symptoms)}")
     
     # If user input for this disease is already stored, use it. Otherwise, ask the user.
-    if disease in user_inputs:
-        user_input = user_inputs[disease]
-    else:
+    if disease not in user_inputs:
         user_input = input("Do you want to remove all mismatched symptoms? (y/n) If you want to keep some symptoms, type 'y' followed by the indices of the symptoms to keep (e.g., 'y02' to keep the first and third symptom): ")
         user_inputs[disease] = user_input  # Store the user input
+
+    # Save the user inputs to the checkpoint file
+    with open('user_inputs.json', 'w') as f:
+        json.dump(user_inputs, f)
+
+# Phase 2: Modify the DataFrame based on stored user inputs
+for disease, user_input in user_inputs.items():
+    mismatched_symptoms = [data['Mismatched Symptoms'].split(', ') for data in mismatched_symptoms_data if data['Disease'] == disease][0]
+    all_symptoms = ', '.join([str(symptom) for symptom in df_copy[df_copy['Disease'] == disease].iloc[0]['Symptom_1':'Symptom_25'] if pd.notnull(symptom)])
 
     # If the user provides an invalid input, assume 'n'
     if user_input.lower() not in ['y', 'n'] and not user_input.lower().startswith('y'):
@@ -91,15 +89,6 @@ for i in range(last_completed_index, len(mismatched_symptoms_data)):
             'Accuracy Rate': f"{accuracy_rate:.2f}%"
         })
 
-    # Save the current index and user inputs to the checkpoint files
-    with open('last_completed_index.txt', 'w') as f:
-        f.write(str(i))
-    with open('user_inputs.json', 'w') as f:
-        json.dump(user_inputs, f)
-
-    # Save the current state of the DataFrame to the Excel file
-    df_copy.to_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Disease_Dataset_Verified.xlsx', index=False)
-
 # Reorder the symptom columns for each disease
 for index, row in df_copy.iterrows():
     symptoms = [symptom for symptom in row['Symptom_1':'Symptom_25'] if pd.notnull(symptom)]
@@ -134,6 +123,5 @@ if incident_log:
 else:
     print("No incidents were logged.")
 
-# Delete the checkpoint files
-os.remove('last_completed_index.txt')
+# Delete the checkpoint file
 os.remove('user_inputs.json')
