@@ -4,6 +4,7 @@ import os
 import signal
 from contextlib import contextmanager
 import openai
+from tqdm import tqdm
 from dotenv import load_dotenv
 
 
@@ -36,24 +37,30 @@ def check_symptoms_with_chatgpt(disease, all_symptoms, mismatched_symptoms):
     Mismatched Symptoms: {', '.join(mismatched_symptoms)}
     Do you want to remove all mismatched symptoms? (y/n) If you want to keep some symptoms, type 'y' followed by the indices of the symptoms to keep (e.g., 'y02' to keep the first and third symptom):
     """
-    
-    with time_limit(10):
-        try:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a medical expert assistant."},
-                    {"role": "user", "content": content}
-                ]
-            )
-            result = response['choices'][0]['message']['content'].strip().lower()
-        except TimeoutException:
-            result = 'n'  # If the function times out, assume no mismatched symptoms should be removed
-    return result
+    previous_response = None
+    attempts = 0
+    while attempts < 10:
+        with time_limit(10):
+            try:
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "You are a helpful assistant."},
+                        {"role": "user", "content": content}
+                    ]
+                )
+                current_response = response['choices'][0]['message']['content'].strip()
+                if previous_response and previous_response == current_response:
+                    return current_response
+                previous_response = current_response
+                attempts += 1
+            except TimeoutException:
+                attempts += 1
+    return 'n'  # Default to 'n' if no consistent answer after 5 attempts
 
 # Load the Excel file and the JSON file
-df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/draft.xlsx')
-with open('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/diseases_with_mismatched_symptoms_v2.json') as f:
+df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Disease_Dataset_with_new_symptoms.xlsx')
+with open('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/diseases_with_mismatched_symptoms.json') as f:
     mismatched_symptoms_data = json.load(f)
 
 # Create a copy of the DataFrame
@@ -85,7 +92,7 @@ for disease_data in mismatched_symptoms_data:
     # Get all the symptoms of the disease
     all_symptoms = ', '.join([str(symptom) for symptom in disease_row['Symptom_1':'Symptom_25'] if pd.notnull(symptom)])
     
-    # If user input for this disease is not already stored, use ChatGPT.
+    # If user input for this disease is already stored, use it. Otherwise, ask the user.
     if disease not in user_inputs:
         user_input = check_symptoms_with_chatgpt(disease, all_symptoms, mismatched_symptoms)
         print(user_input + '\n')
@@ -96,7 +103,7 @@ for disease_data in mismatched_symptoms_data:
         json.dump(user_inputs, f)
 
 # Phase 2: Modify the DataFrame based on stored user inputs
-for disease, user_input in user_inputs.items():
+for disease, user_input in tqdm(user_inputs.items(), desc="Modifying DataFrame", ncols=100):
     mismatched_symptoms = [data['Mismatched Symptoms'].split(', ') for data in mismatched_symptoms_data if data['Disease'] == disease][0]
     all_symptoms = ', '.join([str(symptom) for symptom in df_copy[df_copy['Disease'] == disease].iloc[0]['Symptom_1':'Symptom_25'] if pd.notnull(symptom)])
 
