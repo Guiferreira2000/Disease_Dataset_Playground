@@ -1,6 +1,55 @@
 import pandas as pd
 import json
 import os
+import signal
+from contextlib import contextmanager
+import openai
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+# Initialize OpenAI API
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Define a timeout exception
+class TimeoutException(Exception):
+    pass
+
+# Define a handler for the timeout
+@contextmanager
+def time_limit(seconds):
+    def signal_handler(signum, frame):
+        raise TimeoutException("Timed out!")
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(seconds)
+    try:
+        yield
+    finally:
+        signal.alarm(0)
+
+def check_symptoms_with_chatgpt(disease, all_symptoms, mismatched_symptoms):
+    content = f"""
+    You are a medical expert assistant. Your task is to verify if the symptoms are associated with a specific disease. Only reject the association if you are at least 95% certain.
+    Disease: {disease}
+    All Symptoms: {all_symptoms}
+    Mismatched Symptoms: {', '.join(mismatched_symptoms)}
+    Do you want to remove all mismatched symptoms? (y/n) If you want to keep some symptoms, type 'y' followed by the indices of the symptoms to keep (e.g., 'y02' to keep the first and third symptom):
+    """
+    
+    with time_limit(10):
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a medical expert assistant."},
+                    {"role": "user", "content": content}
+                ]
+            )
+            result = response['choices'][0]['message']['content'].strip().lower()
+        except TimeoutException:
+            result = 'n'  # If the function times out, assume no mismatched symptoms should be removed
+    return result
 
 # Load the Excel file and the JSON file
 df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/draft.xlsx')
@@ -36,14 +85,11 @@ for disease_data in mismatched_symptoms_data:
     # Get all the symptoms of the disease
     all_symptoms = ', '.join([str(symptom) for symptom in disease_row['Symptom_1':'Symptom_25'] if pd.notnull(symptom)])
     
-    print(f"Disease: {disease}")
-    print(f"All Symptoms: {all_symptoms}")
-    print(f"Mismatched Symptoms: {', '.join(mismatched_symptoms)}")
-    
-    # If user input for this disease is already stored, use it. Otherwise, ask the user.
+    # If user input for this disease is not already stored, use ChatGPT.
     if disease not in user_inputs:
-        user_input = input("Do you want to remove all mismatched symptoms? (y/n) If you want to keep some symptoms, type 'y' followed by the indices of the symptoms to keep (e.g., 'y02' to keep the first and third symptom): ")
-        user_inputs[disease] = user_input  # Store the user input
+        user_input = check_symptoms_with_chatgpt(disease, all_symptoms, mismatched_symptoms)
+        print(user_input + '\n')
+        user_inputs[disease] = user_input  # Store the ChatGPT decision
 
     # Save the user inputs to the checkpoint file
     with open('user_inputs.json', 'w') as f:
