@@ -31,7 +31,7 @@ def time_limit(seconds):
 
 def check_symptoms_with_chatgpt(disease, all_symptoms, mismatched_symptoms):
     content = f"""
-    You are a medical expert assistant. Your task is to verify if the symptoms are associated with a specific disease. Only reject the association if you are at least 95% certain.
+    You are a medical expert assistant. Your task is to verify if the symptoms are associated with a specific disease. Only reject the association if you are at least 95% certain. Only answer accordingly to the required output format
     Disease: {disease}
     All Symptoms: {all_symptoms}
     Mismatched Symptoms: {', '.join(mismatched_symptoms)}
@@ -39,15 +39,16 @@ def check_symptoms_with_chatgpt(disease, all_symptoms, mismatched_symptoms):
     """
     previous_response = None
     attempts = 0
-    while attempts < 10:
+    while attempts < 5:
         with time_limit(10):
             try:
                 response = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
                     messages=[
-                        {"role": "system", "content": "You are a helpful assistant."},
+                        {"role": "system", "content": "You are a medical expert assistant. Your task is to verify if the symptoms are associated with a specific disease. Only reject the association if you are at least 95% certain. Only answer accordingly to the required output format."},
                         {"role": "user", "content": content}
-                    ]
+                    ],
+                    max_tokens=15
                 )
                 current_response = response['choices'][0]['message']['content'].strip()
                 if previous_response and previous_response == current_response:
@@ -56,10 +57,10 @@ def check_symptoms_with_chatgpt(disease, all_symptoms, mismatched_symptoms):
                 attempts += 1
             except TimeoutException:
                 attempts += 1
-    return 'n'  # Default to 'n' if no consistent answer after 5 attempts
+    return current_response  # Default to 'n' if no consistent answer after 5 attempts
 
 # Load the Excel file and the JSON file
-df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Disease_Dataset_with_new_symptoms.xlsx')
+df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/draft.xlsx')
 with open('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/diseases_with_mismatched_symptoms.json') as f:
     mismatched_symptoms_data = json.load(f)
 
@@ -126,7 +127,11 @@ for disease, user_input in tqdm(user_inputs.items(), desc="Modifying DataFrame",
     else:  # user_input is 'n'
         expected_symptoms = all_symptoms.split(', ')
 
-    final_symptoms = df_copy[df_copy['Disease'] == disease].iloc[0]['Symptom_1':'Symptom_25'].dropna().tolist()
+    filtered_df = df_copy[df_copy['Disease'] == disease]
+    if not filtered_df.empty:
+        final_symptoms = filtered_df.iloc[0]['Symptom_1':'Symptom_25'].dropna().tolist()
+    else:
+        final_symptoms = []
 
     wrongly_analyzed_symptoms = list(set(expected_symptoms) - set(final_symptoms))
     if wrongly_analyzed_symptoms or set(expected_symptoms) != set(final_symptoms):
