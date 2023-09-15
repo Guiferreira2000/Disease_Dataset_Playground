@@ -56,7 +56,7 @@ def process_symptoms(symptoms):
 diseases_with_few_symptoms = []
 
 # Iterate through the DataFrame and update or add data
-for index, row in df.loc[1:309].iterrows():
+for index, row in df.iterrows():
     icd_code = row['ICD 11']
     disease_name = row['Disease']
     print (f"Disease: {disease_name}")
@@ -66,14 +66,18 @@ for index, row in df.loc[1:309].iterrows():
     if existing_symptoms.count(',') < 9:
         symptoms = get_symptoms(icd_code, disease_name, existing_symptoms)
         symptoms = process_symptoms(symptoms)
-        print (f"new_symptoms: {symptoms}")
+        print (f"\nnew_symptoms: {symptoms}")
         
-        # Add to the JSON file
-        diseases_with_few_symptoms.append({
-            'ICD 11 Code': icd_code,
-            'Disease': disease_name,
-            'Symptoms': existing_symptoms + ', ' + symptoms
-        })
+        # Add the new symptoms to the DataFrame
+        new_symptoms_list = symptoms.split(', ')
+        for i, symptom in enumerate(new_symptoms_list, start=1):
+            column_name = f'Symptom_{i+existing_symptoms.count(",")+1}'
+            df.at[index, column_name] = symptom
+
+# Save the modified DataFrame to a new Excel file
+df.to_excel('Disease_Dataset_with_new_symptoms.xlsx', index=False)
+
+print("Excel file created successfully!")
 
 # Save the JSON file
 with open('diseases_with_few_symptoms.json', 'w') as file:

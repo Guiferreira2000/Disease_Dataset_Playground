@@ -15,3 +15,13 @@ Folder Structure
     prompt_types: This folder contains templates for different types of prompts that can be used with the GPT model. Each prompt type is designed for a specific task or use case. These templates serve as a starting point for defining the role of the chatGPT in diverse scenarios. You can choose the appropriate prompt type based on the task you want the model to perform.
 
     fine_tunings_models: This folder contains fine-tuned models that have been trained on specific tasks or datasets. Fine-tuning a model can improve its performance on a specific task or make it better at understanding a specific type of data. You can use these models if they are suitable for your task.
+
+<h2> Correct structure logic: </h2>
+
+Dataset_augmentation_model.py -> Dataset_security_check.py -> symptom_verification_removal.py
+
+Dataset_augmentation_model.py - Populates the disease database thanks to the gpt api parameters
+
+Dataset_security_check.py - Checks the accuracy and truetiness of the data
+
+symptom_verification_removal.py - Remove the mismacthed symptoms identified by Dataset_security_check.py
