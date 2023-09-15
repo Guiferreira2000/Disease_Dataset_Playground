@@ -17,11 +17,43 @@ Folder Structure
     fine_tunings_models: This folder contains fine-tuned models that have been trained on specific tasks or datasets. Fine-tuning a model can improve its performance on a specific task or make it better at understanding a specific type of data. You can use these models if they are suitable for your task.
 
 <h2> Correct structure logic: </h2>
+<h2>Step 1: Dataset criation and enhancement</h2>
 
-Dataset_augmentation_model.py -> Dataset_security_check.py -> symptom_verification_removal.py
+    Dataset_augmentation_model.py -> Dataset_security_check.py -> symptom_verification_removal.py
 
-Dataset_augmentation_model.py - Populates the disease database thanks to the gpt api parameters
+    Dataset_augmentation_model.py - Populates the disease database thanks to the gpt api parameters
 
-Dataset_security_check.py - Checks the accuracy and truetiness of the data
+    Dataset_security_check.py - Checks the accuracy and truetiness of the data
 
-symptom_verification_removal.py - Remove the mismacthed symptoms identified by Dataset_security_check.py
+    symptom_verification_removal.py - Remove the mismacthed symptoms identified by Dataset_security_check.py
+
+<h3> Requirements: </h3>
+    - Each disease must be labelled through the ICD 11 documentation
+    - Each disease must have a least 10 symptoms
+
+
+
+<h2>Step 2: Symptoms preprocessing </h2>
+
+<h3> Requirements: </h3>
+    - Symptoms cannot be duplicate
+    - Symptoms must be associated with ICD 11 labels
+
+
+
+
+
+
+
+
+
+
+<h2>Extra documentation</h2>
+<h3>Dataset</h3>
+    - Disease_Dataset_Verified.xlsx -> Final output dataset of step 1
+
+    - Disease_Dataset_with_new_symptoms.xlsx -> Dataset create by Dataset_security_check.py 
+
+    - Draft.xlxs - small scale dataset to test code
+
+    - diseases_with_mismatched_symptoms.json -> Dataset symptoms mismathes in a json format

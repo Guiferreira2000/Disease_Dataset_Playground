@@ -59,8 +59,8 @@ def check_symptoms_with_chatgpt(disease, all_symptoms, mismatched_symptoms):
     return 'n'  # Default to 'n' if no consistent answer after 5 attempts
 
 # Load the Excel file and the JSON file
-df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Disease_Dataset_with_new_symptoms.xlsx')
-with open('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/diseases_with_mismatched_symptoms.json') as f:
+df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Datasets/step_1/Disease_Dataset_with_new_symptoms.xlsx')
+with open('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Datasets/step_1/diseases_with_mismatched_symptoms.json') as f:
     mismatched_symptoms_data = json.load(f)
 
 # Create a copy of the DataFrame
@@ -68,8 +68,8 @@ df_copy = df.copy()
 
 # Load user inputs from the checkpoint file if it exists
 user_inputs = {}
-if os.path.exists('user_inputs.json'):
-    with open('user_inputs.json', 'r') as f:
+if os.path.exists('log/user_inputs.json'):
+    with open('log/user_inputs.json', 'r') as f:
         user_inputs = json.load(f)
 
 # Initialize the incident log
@@ -99,7 +99,7 @@ for disease_data in mismatched_symptoms_data:
         user_inputs[disease] = user_input  # Store the ChatGPT decision
 
     # Save the user inputs to the checkpoint file
-    with open('user_inputs.json', 'w') as f:
+    with open('log/user_inputs.json', 'w') as f:
         json.dump(user_inputs, f)
 
 # Phase 2: Modify the DataFrame based on stored user inputs
@@ -161,7 +161,7 @@ for index, row in df_copy.iterrows():
         df_copy.at[index, f'Symptom_{i}'] = None
 
 # Save the modified DataFrame to a new Excel file
-df_copy.to_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Disease_Dataset_Verified.xlsx', index=False)
+df_copy.to_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Datasets/step_1/Disease_Dataset_Verified.xlsx', index=False)
 
 # Ensure the logs directory exists
 if not os.path.exists('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/logs/'):
@@ -187,4 +187,4 @@ else:
     print("No incidents were logged.")
 
 # Delete the checkpoint file
-# os.remove('user_inputs.json')
+# os.remove('log/user_inputs.json')
