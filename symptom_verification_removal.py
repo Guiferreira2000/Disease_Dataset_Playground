@@ -31,24 +31,23 @@ def time_limit(seconds):
 
 def check_symptoms_with_chatgpt(disease, all_symptoms, mismatched_symptoms):
     content = f"""
-    You are a medical expert assistant. Your task is to verify if the symptoms are associated with a specific disease. Only reject the association if you are at least 95% certain. Only answer accordingly to the required output format
     Disease: {disease}
     All Symptoms: {all_symptoms}
     Mismatched Symptoms: {', '.join(mismatched_symptoms)}
-    Do you want to remove all mismatched symptoms? (y/n) If you want to keep some symptoms, type 'y' followed by the indices of the symptoms to keep (e.g., 'y02' to keep the first and third symptom):
+    Do you want to remove all mismatched symptoms? (y/n) If you want to keep some symptoms, type 'y' followed by the indices of the symptoms to keep (for example, 'y02' if you wish to keep the first and third symptom):
     """
     previous_response = None
     attempts = 0
-    while attempts < 5:
+    while attempts < 10:
         with time_limit(10):
             try:
                 response = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
                     messages=[
-                        {"role": "system", "content": "You are a medical expert assistant. Your task is to verify if the symptoms are associated with a specific disease. Only reject the association if you are at least 95% certain. Only answer accordingly to the required output format."},
+                        {"role": "system", "content": "You are a sophisticated medical expert assistant. Your primary objective is to meticulously analyze and determine whether the provided symptoms correlate with a specific disease. It's imperative that you adhere strictly to the required output format, ensuring clarity and precision in your response."},
                         {"role": "user", "content": content}
                     ],
-                    max_tokens=15
+                    max_tokens=10
                 )
                 current_response = response['choices'][0]['message']['content'].strip()
                 if previous_response and previous_response == current_response:
@@ -57,10 +56,10 @@ def check_symptoms_with_chatgpt(disease, all_symptoms, mismatched_symptoms):
                 attempts += 1
             except TimeoutException:
                 attempts += 1
-    return current_response  # Default to 'n' if no consistent answer after 5 attempts
+    return 'n'  # Default to 'n' if no consistent answer after 5 attempts
 
 # Load the Excel file and the JSON file
-df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/draft.xlsx')
+df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Disease_Dataset_with_new_symptoms.xlsx')
 with open('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/diseases_with_mismatched_symptoms.json') as f:
     mismatched_symptoms_data = json.load(f)
 
@@ -96,7 +95,7 @@ for disease_data in mismatched_symptoms_data:
     # If user input for this disease is already stored, use it. Otherwise, ask the user.
     if disease not in user_inputs:
         user_input = check_symptoms_with_chatgpt(disease, all_symptoms, mismatched_symptoms)
-        print(user_input + '\n')
+        print(disease + ': ' + user_input + '\n')
         user_inputs[disease] = user_input  # Store the ChatGPT decision
 
     # Save the user inputs to the checkpoint file
@@ -126,6 +125,12 @@ for disease, user_input in tqdm(user_inputs.items(), desc="Modifying DataFrame",
         expected_symptoms = [symptom for symptom in all_symptoms.split(', ') if symptom not in symptoms_to_remove]
     else:  # user_input is 'n'
         expected_symptoms = all_symptoms.split(', ')
+
+    # Update the DataFrame with the expected symptoms
+    for i, symptom in enumerate(expected_symptoms, start=1):
+        df_copy.loc[df_copy['Disease'] == disease, f'Symptom_{i}'] = symptom
+    for i in range(len(expected_symptoms)+1, 26):
+        df_copy.loc[df_copy['Disease'] == disease, f'Symptom_{i}'] = None
 
     filtered_df = df_copy[df_copy['Disease'] == disease]
     if not filtered_df.empty:
@@ -182,4 +187,4 @@ else:
     print("No incidents were logged.")
 
 # Delete the checkpoint file
-os.remove('user_inputs.json')
+# os.remove('user_inputs.json')
