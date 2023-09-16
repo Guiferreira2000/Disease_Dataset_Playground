@@ -6,7 +6,8 @@ from contextlib import contextmanager
 import openai
 from tqdm import tqdm
 from dotenv import load_dotenv
-
+from collections import Counter
+import re
 
 load_dotenv()
 
@@ -29,34 +30,54 @@ def time_limit(seconds):
     finally:
         signal.alarm(0)
 
+
+def is_valid_response(response):
+    # Check if the response is 'y', 'n', or follows the format 'y' followed by indices (e.g., 'y01', 'y0123')
+    return bool(re.match(r'^(y(\d{2})*|n)$', response))
+
 def check_symptoms_with_chatgpt(disease, all_symptoms, mismatched_symptoms):
     content = f"""
+    Based on the information provided, determine if the mismatched symptoms should be removed from the list of all symptoms for the given disease. Respond with 'y' if all mismatched symptoms should be removed. If only some should be removed, respond with 'y' followed by the indices of the symptoms to keep (for example, 'y02' if you wish to keep the first and third symptom). If no symptoms should be removed, respond with 'n'. Ensure your response strictly follows the mentioned format.
     Disease: {disease}
     All Symptoms: {all_symptoms}
     Mismatched Symptoms: {', '.join(mismatched_symptoms)}
-    Do you want to remove all mismatched symptoms? (y/n) If you want to keep some symptoms, type 'y' followed by the indices of the symptoms to keep (for example, 'y02' if you wish to keep the first and third symptom):
     """
-    previous_response = None
-    attempts = 0
-    while attempts < 10:
+
+
+    responses = []
+    for _ in range(5):
         with time_limit(10):
             try:
                 response = openai.ChatCompletion.create(
                     model="gpt-3.5-turbo",
                     messages=[
-                        {"role": "system", "content": "You are a sophisticated medical expert assistant. Your primary objective is to meticulously analyze and determine whether the provided symptoms correlate with a specific disease. It's imperative that you adhere strictly to the required output format, ensuring clarity and precision in your response."},
+                        {"role": "system", "content": "You are a sophisticated medical expert assistant. Your primary objective is to meticulously analyze and determine whether the provided symptoms correlate with a specific disease. It's imperative that you adhere strictly to the required output format, ensuring clarity and precision in your response. Dont repeat indicies"},
                         {"role": "user", "content": content}
                     ],
                     max_tokens=10
                 )
-                current_response = response['choices'][0]['message']['content'].strip()
-                if previous_response and previous_response == current_response:
-                    return current_response
-                previous_response = current_response
-                attempts += 1
+                response_content = response['choices'][0]['message']['content'].strip()
+                if is_valid_response(response_content):
+                    responses.append(response_content)
             except TimeoutException:
-                attempts += 1
-    return 'n'  # Default to 'n' if no consistent answer after 5 attempts
+                pass
+
+    # Count the frequency of each response
+    response_counts = Counter(responses)
+    most_common_responses = response_counts.most_common()
+
+    # Check if we have any valid responses
+    if not most_common_responses:
+        return 'n'
+
+    # If the most common response is 'y' and its frequency is not greater than 5, return the second most common response
+    if most_common_responses[0][0] == 'y' and most_common_responses[0][1] <= 3:
+        if len(most_common_responses) > 1:
+            return most_common_responses[1][0]
+        else:
+            return 'n'
+    else:
+        return most_common_responses[0][0]
 
 # Load the Excel file and the JSON file
 df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Datasets/step_1/Disease_Dataset_with_new_symptoms.xlsx')
@@ -68,8 +89,8 @@ df_copy = df.copy()
 
 # Load user inputs from the checkpoint file if it exists
 user_inputs = {}
-if os.path.exists('log/user_inputs.json'):
-    with open('log/user_inputs.json', 'r') as f:
+if os.path.exists('logs/user_inputs.json'):
+    with open('logs/user_inputs.json', 'r') as f:
         user_inputs = json.load(f)
 
 # Initialize the incident log
@@ -99,7 +120,7 @@ for disease_data in mismatched_symptoms_data:
         user_inputs[disease] = user_input  # Store the ChatGPT decision
 
     # Save the user inputs to the checkpoint file
-    with open('log/user_inputs.json', 'w') as f:
+    with open('logs/user_inputs.json', 'w') as f:
         json.dump(user_inputs, f)
 
 # Phase 2: Modify the DataFrame based on stored user inputs
@@ -161,7 +182,7 @@ for index, row in df_copy.iterrows():
         df_copy.at[index, f'Symptom_{i}'] = None
 
 # Save the modified DataFrame to a new Excel file
-df_copy.to_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Datasets/step_1/Disease_Dataset_Verified.xlsx', index=False)
+df_copy.to_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Datasets/step_1/Disease_Dataset_Verified_V1.xlsx', index=False)
 
 # Ensure the logs directory exists
 if not os.path.exists('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/logs/'):
@@ -187,4 +208,4 @@ else:
     print("No incidents were logged.")
 
 # Delete the checkpoint file
-# os.remove('log/user_inputs.json')
+# os.remove('logs/user_inputs.json')
