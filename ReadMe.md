@@ -29,7 +29,7 @@ Folder Structure
 
 <h3> Requirements: </h3>
     - Each disease must be labelled through the ICD 11 documentation
-    - Each disease must have a least 10 symptoms
+    - Each disease must have a least 12 symptoms - check_disease_length.py (See data_insight folder)
 
 
 
