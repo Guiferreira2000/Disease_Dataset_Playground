@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 
 # Load the Excel file into a pandas DataFrame
-df = pd.read_excel("Datasets/step_1/draft.xlsx", engine='openpyxl')
+df = pd.read_excel("Datasets/step_1/Disease_Dataset_19_09_2023.xlsx", engine='openpyxl')
 
 # Create an empty list to store the diseases with fewer than 10 symptoms
 diseases_less_than_10_symptoms = []
