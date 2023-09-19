@@ -37,6 +37,12 @@ Folder Structure
 
 <h2>Step 2: Symptoms preprocessing </h2>
 
+    SymptomExtractor.py -> Puts all symptoms in the same format and extract all symptoms to an excell sheet so it can later processed.
+    
+    symptom_to_label.py -> 
+
+    symptom_data_updater.py ->
+
 <h3> Requirements: </h3>
     - Symptoms cannot be duplicate
     - Symptoms must be associated with ICD 11 labels

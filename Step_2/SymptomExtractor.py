@@ -49,10 +49,34 @@ class SymptomExtractor:
         with open(output_file, 'w') as json_file:
             json.dump({"Rows with gaps": gap_info}, json_file, indent=4)
 
+    def get_symptom_frequency(self):
+        df = pd.read_excel(self.input_file)
+        symptom_columns = [col for col in df.columns if 'Symptom_' in col]
+
+        # Flatten all symptom columns into a single series
+        all_symptoms_series = df[symptom_columns].stack()
+
+        # Calculate symptom frequency
+        frequency = all_symptoms_series.value_counts()
+
+        return frequency
+
+    def append_frequency_to_xlsx(self, symptoms, output_file):
+        df = pd.DataFrame(symptoms, columns=['Symptoms'])
+
+        # Get symptom frequencies and add to the dataframe
+        frequencies = self.get_symptom_frequency()
+        df['Frequency'] = df['Symptoms'].map(frequencies).fillna(0).astype(int)
+
+        # Switch order of columns
+        df = df[['Frequency', 'Symptoms']]
+
+        df.to_excel(output_file, index=False)
+
 if __name__ == "__main__":
     extractor = SymptomExtractor("Datasets/step_1/draft.xlsx")
     symptoms = extractor.extract_symptoms()
-    extractor.save_to_xlsx(symptoms, "Datasets/step_2/output_symptoms.xlsx")
+    extractor.append_frequency_to_xlsx(symptoms, "Datasets/step_2/output_symptoms_with_frequency.xlsx")
 
     gap_info = extractor.rows_with_gaps()
     extractor.save_to_json(gap_info, "rows_with_gaps.json")
