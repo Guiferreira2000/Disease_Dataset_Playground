@@ -27,9 +27,11 @@ Folder Structure
 
     symptom_verification_removal.py - Remove the mismacthed symptoms identified by Dataset_security_check.py
 
+    check_disease_length.py - Check each disease number of symptoms through histograms and json files
+
 <h3> Requirements: </h3>
     - Each disease must be labelled through the ICD 11 documentation
-    - Each disease must have a least 12 symptoms - check_disease_length.py (See data_insight folder to see histograms)
+    - Each disease must have a least 12 symptoms
 
 
 
