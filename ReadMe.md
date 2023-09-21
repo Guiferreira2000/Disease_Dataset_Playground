@@ -43,7 +43,7 @@ Folder Structure
 
     symptom_data_updater.py -> (Optional) It passes past information of older version of preprocessed symptoms into the new output_symptoms_with_frequency.xlsx file
 
-    symptom_to_label.py -> 
+    symptom_to_label.py -> Fetchs the ICD 11 code associated with each disease and fill in the symptoms_updated_ICD.xlsx through the ICD API call. The remaining unlabelled symptoms must ne filled manually
 
 <h3> Requirements: </h3>
     - Symptoms cannot be duplicate
@@ -51,8 +51,11 @@ Folder Structure
 
 
 
+<h2>Step 3:Processing and organizing the labels </h2>
 
+    ICD_11_Processor.py -> 
 
+<h3> Requirements: </h3>
 
 
 
