@@ -6,6 +6,9 @@ import plotly.express as px
 # Load the Excel file into a pandas DataFrame
 df = pd.read_excel("Datasets/step_1/Disease_Dataset_19_09_2023.xlsx", engine='openpyxl')
 
+# Number of symptoms threshold
+threshold = 11
+
 # Create an empty list to store the diseases with fewer than 10 symptoms
 diseases_less_than_10_symptoms = []
 
@@ -21,7 +24,7 @@ for _, row in df.iterrows():
     symptom_counts.append(symptom_count)
 
     # Check if there are fewer than 10 non-null symptoms
-    if symptom_count < 10:
+    if symptom_count < threshold:
         disease_info = {
             'Code': row['Code'],
             'ICD 11': row['ICD 11'],
@@ -55,6 +58,6 @@ with open("data_insight/output.json", "w") as outfile:
     json.dump(diseases_less_than_10_symptoms, outfile, indent=4)
 
 # Print the count of diseases with fewer than 10 symptoms
-print(f"There are {len(diseases_less_than_10_symptoms)} diseases with fewer than 10 symptoms.")
+print(f"There are {len(diseases_less_than_10_symptoms)} diseases with fewer than {threshold} symptoms.")
 
 print("Process complete! Check 'output.json' for the results, 'symptoms_histogram.png' for the static graph, and 'symptoms_histogram_interactive.html' for the interactive histogram.")

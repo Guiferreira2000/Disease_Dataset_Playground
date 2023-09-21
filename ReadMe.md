@@ -27,13 +27,23 @@ Folder Structure
 
     symptom_verification_removal.py - Remove the mismacthed symptoms identified by Dataset_security_check.py
 
+    check_disease_length.py - Check each disease number of symptoms through histograms and json files
+
 <h3> Requirements: </h3>
     - Each disease must be labelled through the ICD 11 documentation
-    - Each disease must have a least 12 symptoms - check_disease_length.py (See data_insight folder to see histograms)
+    - Each disease must have a least 12 symptoms
 
 
 
 <h2>Step 2: Symptoms preprocessing </h2>
+
+    Disease_dataset_dd_mm_AAAA.xlsx -> draft.xlsx (Protective measure. Never work with original data! Always have a backup!!!)
+
+    SymptomExtractor.py -> Puts all symptoms in the same format and extract all symptoms to an excell sheet so it can later processed. draft.xlsx -> preprocessed_draft.xlsx -> output_symptoms_with_frequency.xlsx
+
+    symptom_data_updater.py -> (Optional) It passes past information of older version of preprocessed symptoms into the new output_symptoms_with_frequency.xlsx file
+
+    symptom_to_label.py -> 
 
 <h3> Requirements: </h3>
     - Symptoms cannot be duplicate
