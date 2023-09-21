@@ -1,7 +1,7 @@
 import pandas as pd
 
 # 1. Read both Excel files into pandas DataFrames
-df_output = pd.read_excel("Datasets/step_2/symptoms_preprocessing_19_09_2023.xlsx")
+df_output = pd.read_excel("Datasets/step_2/output_symptoms_with_frequency.xlsx")
 df_old = pd.read_excel("Datasets/step_2/symptoms_pre_processing_01_08_2023.xlsx")
 
 # 2. For each symptom in output_symptoms.xlsx, 

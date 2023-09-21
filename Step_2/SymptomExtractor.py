@@ -42,8 +42,6 @@ class SymptomExtractor:
         # Save the preprocessed dataframe to a new Excel file
         self.df.to_excel(output_file, index=False)
 
-    # ... [The rest of the methods remain unchanged]
-
     def extract_symptoms(self):
         symptom_columns = [col for col in self.df.columns if 'Symptom_' in col]
         all_symptoms = self.df[symptom_columns].values.flatten()
@@ -88,7 +86,16 @@ class SymptomExtractor:
 
 if __name__ == "__main__":
     extractor = SymptomExtractor("Datasets/step_1/draft.xlsx")
-    extractor.preprocess_symptoms("Datasets/step_1/preprocessed_draft.xlsx")
+
+    while True:
+        choice = input("Would you like to check the structure of the symptoms? (y/n): ")
+        if choice in ['y', 'n']:
+            break
+        print("Invalid input. Please enter 'y' or 'n'.")
+
+    if choice == 'y':
+        extractor.preprocess_symptoms("Datasets/step_1/preprocessed_draft.xlsx")
+
     symptoms = extractor.extract_symptoms()
     extractor.append_frequency_to_xlsx(symptoms, "Datasets/step_2/output_symptoms_with_frequency.xlsx")
 

@@ -37,11 +37,13 @@ Folder Structure
 
 <h2>Step 2: Symptoms preprocessing </h2>
 
-    SymptomExtractor.py -> Puts all symptoms in the same format and extract all symptoms to an excell sheet so it can later processed.
-    
-    symptom_to_label.py -> 
+    Disease_dataset_dd_mm_AAAA.xlsx -> draft.xlsx (Protective measure. Never work with original data! Always have a backup!!!)
 
-    symptom_data_updater.py ->
+    SymptomExtractor.py -> Puts all symptoms in the same format and extract all symptoms to an excell sheet so it can later processed. draft.xlsx -> preprocessed_draft.xlsx -> output_symptoms_with_frequency.xlsx
+
+    symptom_data_updater.py -> (Optional) It passes past information of older version of preprocessed symptoms into the new output_symptoms_with_frequency.xlsx file
+
+    symptom_to_label.py -> 
 
 <h3> Requirements: </h3>
     - Symptoms cannot be duplicate

@@ -81,10 +81,9 @@ for index, row in df_output.iterrows():
     
     # If ICD code is not present
     if pd.isnull(icd_code):
-        disease_url, search_request = search_disease_url(symptom, access_token, linearization_name, release_id)
-        
+        disease_url = search_disease_url(symptom, access_token, linearization_name, release_id)
         # If disease_url found and search request successful
-        if disease_url and search_request:
+        if disease_url:
             with open(f'Datasets/step_2/json_files/search_results_{symptom}.json') as f:
                 data = json.load(f)
             
@@ -100,4 +99,4 @@ for index, row in df_output.iterrows():
                 print(f"Symptom: {symptom}, ICD Code: {the_code}")
 
 # Save the DataFrame back to output_symptoms.xlsx
-df_output.to_excel("symptoms_updated_ICD.xlsx", index=False)
+df_output.to_excel("Datasets/step_2/symptoms_updated_ICD.xlsx", index=False)

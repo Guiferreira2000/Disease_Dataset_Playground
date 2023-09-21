@@ -80,7 +80,7 @@ if response.status_code == 200:
     response_body = json.loads(response.text)
     access_token = response_body["access_token"]
 
-    disease_name = "Loiasis"  # Replace this with the disease name you want to search
+    disease_name = "Arrhythmia"  # Replace this with the disease name you want to search
     linearization_name = "mms"  # Replace with the desired linearization name
     release_id = "2023-01"  # Replace with the desired release ID
     disease_url = search_disease_url(disease_name, access_token, linearization_name, release_id)
