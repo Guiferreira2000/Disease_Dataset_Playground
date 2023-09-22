@@ -3,7 +3,7 @@ import pandas as pd
 def main():
     # File paths
     draft_path = "Datasets/step_1/draft.xlsx"
-    symptoms_icd_path = "Datasets/step_2/symptoms_updated_ICD_Backup.xlsx"
+    symptoms_icd_path = "Datasets/step_2/symptoms_updated_ICD.xlsx"
     output_path = "Datasets/step_3/diseases_with_ICD_labels.xlsx"
 
     # Read the files into pandas DataFrames
@@ -23,23 +23,25 @@ def main():
         
         draft_df[col] = draft_df[col].map(symptoms_to_icd)
 
-    # Remove duplicate ICD codes in each row and shift ICD codes to the left to fill gaps
+    # Remove exact duplicate ICD codes in each row and shift ICD codes to the left to fill gaps
     rows_with_duplicates = 0
     for index, row in draft_df.iterrows():
         icd_codes = row[symptom_cols].dropna().tolist()
         
-        if len(icd_codes) != len(set(icd_codes)):
+        exact_duplicates = [icd for icd in icd_codes if icd_codes.count(icd) > 1]
+        
+        if exact_duplicates:
             rows_with_duplicates += 1
-            duplicated_codes = set([icd for icd in icd_codes if icd_codes.count(icd) > 1])
-            print(f"Warning: Disease '{row['Disease']}' had duplicated ICD codes: {', '.join(duplicated_codes)}")
+            print(f"Warning: Disease '{row['Disease']}' had exact duplicated ICD codes: {', '.join(set(exact_duplicates))}")
 
-        unique_icd_codes = list(dict.fromkeys(icd_codes))  # Removes duplicates while preserving order
+        unique_icd_codes = []
+        [unique_icd_codes.append(x) for x in icd_codes if x not in unique_icd_codes]  # Removes exact duplicates while preserving order
 
         # Fill the ICD codes back into the row, ensuring no gaps
         for i, col in enumerate(symptom_cols):
             draft_df.at[index, col] = unique_icd_codes[i] if i < len(unique_icd_codes) else None  # Fill with None if out of ICD codes
 
-    print(f"\nTotal number of rows with duplicates: {rows_with_duplicates}")
+    print(f"\nTotal number of rows with exact duplicates: {rows_with_duplicates}")
 
     # Write the resulting DataFrame back to Excel
     draft_df.to_excel(output_path, index=False)

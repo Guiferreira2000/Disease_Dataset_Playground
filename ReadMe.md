@@ -71,6 +71,19 @@ Folder Structure
     - Dataset augmentation
 
 
+<h2>Step 4: Extra dataset features </h2>
+
+    check_duplicates.py -> Check duplicate diseases
+
+    incidence_rate.py -> A simple script that gathers information about the diseases incidence rate from chatgpt
+
+    symptom_severity.py -> Script that gathers information about the diseases severity according to chatgpt parameters. Need normalization!
+
+
+<h3> Requirements: </h3>
+    - Each disease must be associated with an incidence rate across the europe region
+    - ICD code structure relatedness so the model understand that certain codes and their subcodes are more related than others.
+
 
 
 <h2>Extra documentation</h2>
