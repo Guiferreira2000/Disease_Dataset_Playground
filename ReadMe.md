@@ -53,10 +53,18 @@ Folder Structure
 
 <h2>Step 3:Processing and organizing the labels </h2>
 
-    ICD_11_Processor.py -> 
+    ICD_11_Processor.py -> It clusters symptoms accordingly to their ICD 11 code
+
+    LLM_json_loader.py -> Implementation of chatgpt inside the icd_11_GPT_formated_data.json File
+
+    replace_symptoms_with_icd_codes.py -> Replace symptoms by their ICD codes accordingly to symptoms_updated_ICD.xlsx
+
+    Dataset_augmentation.py -> Data augmentation technique to generate more data samples by removing one symptom at a time
 
 <h3> Requirements: </h3>
-
+    - Chatgpt access to symptoms label process through LLM tools such as Langchain
+    - Symptoms of the dataset replaced to ICD 11 codes
+    - Dataset augmentation
 
 
 
@@ -70,3 +78,8 @@ Folder Structure
     - Draft.xlxs - small scale dataset to test code
 
     - diseases_with_mismatched_symptoms.json -> Dataset symptoms mismathes in a json format
+
+
+<h3>Data insight</h3>
+
+    - check_disease_length.py - Check each disease number of symptoms through histograms and json files
