@@ -4,10 +4,14 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 
 # Load the Excel file into a pandas DataFrame
-df = pd.read_excel("Datasets/step_1/Disease_Dataset_19_09_2023.xlsx", engine='openpyxl')
+dataset_1 = "Datasets/step_1/old datasets/Disease_Dataset_18_09_2023.xlsx"
+dataset_2 = "Datasets/step_1/old datasets/Disease_Dataset_21_09_2023.xlsx"
+dataset_3 = "Datasets/step_3/diseases_with_ICD_labels.xlsx"
+
+df = pd.read_excel(dataset_3, engine='openpyxl')
 
 # Number of symptoms threshold
-threshold = 11
+threshold = 10
 
 # Create an empty list to store the diseases with fewer than 10 symptoms
 diseases_less_than_10_symptoms = []

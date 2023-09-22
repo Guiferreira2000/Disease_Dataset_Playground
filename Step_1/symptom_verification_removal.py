@@ -97,8 +97,8 @@ def check_symptoms_with_chatgpt(disease, all_symptoms, mismatched_symptoms):
             return most_common_responses[0][0]
 
 # Load the Excel file and the JSON file
-df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Datasets/step_1/Disease_Dataset_with_new_symptoms.xlsx')
-with open('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Datasets/step_1/diseases_with_mismatched_symptoms.json') as f:
+df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Disease_Dataset_Playground/Datasets/step_1/Disease_Dataset_with_new_symptoms.xlsx')
+with open('/home/guilherme/Documents/GitHub/Tese/Disease_Dataset_Playground/Datasets/step_1/diseases_with_mismatched_symptoms.json') as f:
     mismatched_symptoms_data = json.load(f)
 
 # Create a copy of the DataFrame
@@ -199,14 +199,14 @@ for index, row in df_copy.iterrows():
         df_copy.at[index, f'Symptom_{i}'] = None
 
 # Save the modified DataFrame to a new Excel file
-df_copy.to_excel('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/Datasets/step_1/Disease_Dataset_Verified_V1.xlsx', index=False)
+df_copy.to_excel('/home/guilherme/Documents/GitHub/Tese/Disease_Dataset_Playground/Datasets/step_1/Disease_Dataset_Verified_V1.xlsx', index=False)
 
 # Ensure the logs directory exists
-if not os.path.exists('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/logs/'):
-    os.makedirs('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/logs/')
+if not os.path.exists('/home/guilherme/Documents/GitHub/Tese/Disease_Dataset_Playground/logs/'):
+    os.makedirs('/home/guilherme/Documents/GitHub/Tese/Disease_Dataset_Playground/logs/')
 
 # Save the incident log to a file
-with open('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/logs/incident_log.txt', 'w') as f:
+with open('/home/guilherme/Documents/GitHub/Tese/Disease_Dataset_Playground/logs/incident_log.txt', 'w') as f:
     for incident in incident_log:
         f.write(f"Disease: {incident['Disease']}\n")
         f.write(f"Initial Symptoms: {', '.join(incident['Initial Symptoms'])}\n")
@@ -220,7 +220,7 @@ with open('/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/logs/incident_l
 
 # Inform the user if any incidents were logged
 if incident_log:
-    print(f"{len(incident_log)} incidents were logged. Please check '/home/guilherme/Documents/GitHub/Tese/Dataset_Open_AI/logs/incident_log.txt' for details.")
+    print(f"{len(incident_log)} incidents were logged. Please check '/home/guilherme/Documents/GitHub/Tese/Disease_Dataset_Playground/logs/incident_log.txt' for details.")
 else:
     print("No incidents were logged.")
 
