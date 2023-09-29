@@ -63,6 +63,8 @@ Folder Structure
 
     replace_symptoms_with_icd_codes.py -> Replace symptoms by their ICD codes accordingly to symptoms_updated_ICD.xlsx
 
+    symptom_converter.py -> Symptoms that have a '/', it'll be split into two separate symptoms and If a symptom contains '&', everything after the '&' including itself will be removed.
+
     Dataset_augmentation.py -> Data augmentation technique to generate more data samples by removing one symptom at a time
 
 <h3> Requirements: </h3>
