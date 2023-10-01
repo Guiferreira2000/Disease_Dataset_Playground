@@ -28,8 +28,8 @@ for code in unique_icd_codes:
     for individual_code in split_codes:
         for symptom in symptoms_list:
             json_list.append({
-                "ICD 11 Code": individual_code,
-                "Symptom": symptom
+                "icd_11_code": individual_code,
+                "symptom": symptom.strip()  # Remove trailing spaces
             })
             
     # Update the dictionary for the icd_11_formated_data.json
@@ -40,10 +40,15 @@ for code in unique_icd_codes:
 
 # Ensure unique symptoms for each ICD in the dictionary (for icd_11_formated_data.json)
 for key, value in json_dict.items():
-    json_dict[key] = list(set(value))
+    json_dict[key] = list(set([v.strip() for v in value]))  # Remove trailing spaces and ensure uniqueness
+
+# Remove duplicates from json_list
+json_list = [{"icd_11_code": item["icd_11_code"], "symptom": item["symptom"].strip()} for item in json_list]  # Ensure there's no trailing space
+seen = set()
+json_list = [x for x in json_list if tuple(x.items()) not in seen and not seen.add(tuple(x.items()))]
 
 # Save the JSON list structure to a file (for icd_11_GPT_formated_data.json)
-with open("Datasets/step_3/icd_11_GPT_formated_data_v2.json", "w") as f:
+with open("Datasets/step_3/icd_11_GPT_formated_data_v2.json", "w") as f:  # Changed the file name to match the requirement
     json.dump(json_list, f, indent=4)
 
 # Save the JSON dictionary structure to a file (for icd_11_formated_data.json)
