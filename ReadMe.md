@@ -63,6 +63,8 @@ Folder Structure
 
     replace_symptoms_with_icd_codes.py -> Replace symptoms by their ICD codes accordingly to symptoms_updated_ICD.xlsx
 
+    symptom_converter.py -> Symptoms that have a '/', it'll be split into two separate symptoms and If a symptom contains '&', everything after the '&' including itself will be removed.
+
     Dataset_augmentation.py -> Data augmentation technique to generate more data samples by removing one symptom at a time
 
 <h3> Requirements: </h3>
@@ -70,6 +72,19 @@ Folder Structure
     - Symptoms of the dataset replaced to ICD 11 codes
     - Dataset augmentation
 
+
+<h2>Step 4: Extra dataset features </h2>
+
+    check_duplicates.py -> Check duplicate diseases
+
+    incidence_rate.py -> A simple script that gathers information about the diseases incidence rate from chatgpt
+
+    symptom_severity.py -> Script that gathers information about the diseases severity according to chatgpt parameters. Need normalization!
+
+
+<h3> Requirements: </h3>
+    - Each disease must be associated with an incidence rate across the europe region
+    - ICD code structure relatedness so the model understand that certain codes and their subcodes are more related than others.
 
 
 

@@ -6,7 +6,7 @@ import plotly.express as px
 # Load the Excel file into a pandas DataFrame
 dataset_1 = "Datasets/step_1/old datasets/Disease_Dataset_18_09_2023.xlsx"
 dataset_2 = "Datasets/step_1/old datasets/Disease_Dataset_21_09_2023.xlsx"
-dataset_3 = "Datasets/step_3/diseases_with_ICD_labels.xlsx"
+dataset_3 = "Datasets/step_3/Labeled_Diseases_Dataset_29_09_2023.xlsx"
 
 df = pd.read_excel(dataset_3, engine='openpyxl')
 
@@ -42,7 +42,7 @@ plt.figure(figsize=(10, 6))
 plt.hist(symptom_counts, bins=range(1, 27), color='skyblue', edgecolor='black', align='left')
 plt.ylabel('Number of Diseases')
 plt.xlabel('Number of Symptoms')
-plt.title('Distribution of Diseases by Number of Symptoms')
+# plt.title('Distribution of Diseases by Number of Symptoms')
 plt.xticks(range(1, 26))
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.tight_layout()

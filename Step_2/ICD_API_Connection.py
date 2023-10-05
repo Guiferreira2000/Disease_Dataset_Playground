@@ -7,16 +7,20 @@ import re
 # Versions of the ICD 11 code (release id)
 # https://icd.who.int/icdapi/docs2/SupportedClassifications/
 
-### 1º Part - search_disease_url function
+### 1º Part - search_disease_name function
 
 
-def search_disease_url(disease_name, access_token, linearization_name, release_id):
+def search_disease_name(disease_name, access_token, linearization_name, release_id):
+    ''' 
+    Search function for disease name
+    '''
     search_request = False
 
     base_url = f"https://id.who.int/icd/release/{release_id}"
     #search_url = f"{base_url}/{linearization_name}/search"
     #search_url = "https://id.who.int/icd/entity/search" # /icd/entity/search
     search_url = f"https://id.who.int/icd/release/11/{release_id}/{linearization_name}/search" # /icd/release/11/{releaseId}/{linearizationname}/search
+    # search_url = f"https://id.who.int/icd/release/11/{release_id}/{linearization_name}/codeinfo/{disease_name}" # /icd/release/11/{releaseId}/{linearizationname}/search
 
 
 
@@ -41,6 +45,7 @@ def search_disease_url(disease_name, access_token, linearization_name, release_i
     }
 
     response = requests.get(search_url, headers=headers, params=params)
+    print (f"Response status: {response.json()}")
 
     if response.status_code == 200:
         search_results = response.json()
@@ -64,6 +69,62 @@ def search_disease_url(disease_name, access_token, linearization_name, release_i
     return None, search_request
 
 
+def search_disease_code(disease_code, access_token, linearization_name, release_id):
+    ''' 
+    Search function for code
+    '''
+    base_url = f"https://id.who.int/icd/release/11/{release_id}"
+    codeinfo_url = f"https://id.who.int/icd/release/11/{release_id}/{linearization_name}/codeinfo/{disease_code}"
+
+    headers = {
+        "API-Version": "v2",
+        "Authorization": f"Bearer {access_token}",
+        "Accept": "application/json",
+        "Accept-Language": "en",
+    }
+
+    params = {
+        "include": "ancestor"
+    }
+
+    response = requests.get(codeinfo_url, headers=headers, params=params)
+    print(f"Response status: {response.json()}")
+
+    if response.status_code == 200:
+        search_results = response.json()
+
+        if "stemId" in search_results:
+            entity_url = search_results["stemId"]
+            parts = entity_url.rsplit('/', 1)
+            if not parts[-1].isdigit():
+                entity_url = parts[0]
+
+            print(f"stemId: {entity_url}")
+
+            response_entity = requests.get(entity_url, headers=headers)
+            response_entity_json = response_entity.json()
+
+            with open(f'Datasets/step_2/json_files/search_results_{disease_code}.json', 'w') as f:
+                json.dump(response_entity_json, f, indent=2)
+            
+            # Check if 'definition' key exists
+            if 'definition' in response_entity_json:
+                return response_entity_json['definition']['@value']
+            # If 'definition' key does not exist, check for 'foundationChildElsewhere' key
+            elif 'foundationChildElsewhere' in response_entity_json:
+                # Retrieve the labels from the 'foundationChildElsewhere' list
+                labels = [item['label']['@value'] for item in response_entity_json['foundationChildElsewhere']]
+                return labels
+
+    else:
+        print(f"Error: {response.status_code}")
+        print(response.text)
+
+    return None
+
+
+
+
 ### 2º Part - Call parameters for the function
 
 
@@ -80,13 +141,18 @@ if response.status_code == 200:
     response_body = json.loads(response.text)
     access_token = response_body["access_token"]
 
-    disease_name = "Arrhythmia"  # Replace this with the disease name you want to search
+    disease_name = "Nontoxic multinodular goitre"  # Replace this with the disease name you want to search
+    disease_code = "DB93"  # Replace this with the disease code you want to search
     linearization_name = "mms"  # Replace with the desired linearization name
     release_id = "2023-01"  # Replace with the desired release ID
-    disease_url = search_disease_url(disease_name, access_token, linearization_name, release_id)
-    
-    if len(disease_url) == 2: 
-        search_boolean = disease_url[1]
+    # disease_name = search_disease_name(disease_code, access_token, linearization_name, release_id)
+    disease_code = search_disease_code(disease_code, access_token, linearization_name, release_id)
+    print(f"disease_code: {disease_code}")
+    disease_url = disease_code # Or disease_name
+
+    if disease_url:
+        if len(disease_url) == 2: 
+            search_boolean = disease_url[1]
 
 
     # if disease_url:
@@ -130,5 +196,5 @@ if destination_entities:
     print(definition)
 
 # Checks the type of var of disease_url. Whether the boolean of highlightingEnabled(Default: True)
-if len(disease_url) == 2:
-    print("Search Request: ", search_boolean)
+# if len(disease_url) == 2:
+#     print("Search Request: ", search_boolean)
