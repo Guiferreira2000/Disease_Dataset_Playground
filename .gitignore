@@ -8,3 +8,11 @@
 Dataset_accuracy_06_08_2023
 *.xlsx#
 *.html
+*.m4a
+*.mp3
+*.wav
+*.srt
+*.tsv
+*.vtt
+*.pyc
+*.pkl

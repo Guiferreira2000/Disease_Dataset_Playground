@@ -88,6 +88,17 @@ Folder Structure
 
 
 
+
+<h2>Step 5: Speech-to-text assistent </h2>
+
+
+
+
+<h3> Requirements: </h3>
+
+
+
+
 <h2>Extra documentation</h2>
 <h3>Dataset</h3>
     - Disease_Dataset_Verified.xlsx -> Final output dataset of step 1

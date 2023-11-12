@@ -2,7 +2,8 @@ import pandas as pd
 from itertools import combinations
 
 # Load the Excel file
-df = pd.read_excel('Datasets/step_3/Labeled_Diseases_Dataset_29_09_2023.xlsx')
+# df = pd.read_excel('Datasets/step_3/Labeled_Diseases_Dataset_29_09_2023.xlsx')
+df = pd.read_excel('/home/guilherme/Documents/GitHub/Tese/Documentation/Dataset/Raw/Disease_Dataset_22_09_2023.xlsx')
 
 # Create an empty DataFrame to store the augmented instances
 augmented_data = pd.DataFrame(columns=df.columns)
@@ -38,6 +39,6 @@ for _, row in df.iterrows():
         augmented_data = pd.concat([augmented_data, pd.DataFrame([augmented_row])], ignore_index=True)
 
 # Save the original dataset to the first sheet
-with pd.ExcelWriter('Datasets/step_3/Augmented_database_29_09_2023.xlsx') as writer:
+with pd.ExcelWriter('Datasets/step_3/Raw_Augmented_database_13_10_2023.xlsx') as writer:
     df.to_excel(writer, sheet_name='Original Data', index=False)
     augmented_data.to_excel(writer, sheet_name='Augmented Data', index=False)
