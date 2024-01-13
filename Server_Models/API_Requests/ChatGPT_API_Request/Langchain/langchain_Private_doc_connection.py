@@ -9,10 +9,9 @@ import os
 # import nltk
 from dotenv import load_dotenv
 
-# os.getenv("OPENAI_API_KEY") #  
 os.environ['OPENAI_API_KEY'] = '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'
 
-loader = DirectoryLoader('/home/guilherme/Documents/pdfs', glob='**/*.pdf')
+loader = DirectoryLoader("/home/guilherme/Documents/Github/Tese/Disease_Dataset_Playground/pdfs", glob='**/*.pdf')
 print(loader)
 
 # This line of code is creating an instance of the DirectoryLoader class, which is used to load text data from multiple files in a directory.
@@ -50,8 +49,8 @@ qa = VectorDBQA.from_chain_type(llm=OpenAI(), chain_type="stuff", vectorstore=do
 
 # print(result['result'])
 # llm=ChartOpenAI()  #Mix between original pipeline data information and outside external information (More powerfull)
-qa = VectorDBQA.from_chain_type(llm=OpenAI(), chain_type="stuff", vectorstore=docsearch, return_source_documents=True)
-query = "How was implemented LLM in the database?"
+# qa = VectorDBQA.from_chain_type(llm=OpenAI(), chain_type="stuff", vectorstore=docsearch, return_source_documents=True)
+query = "Qual o tempo de trabalho semanal que um motorista pode fazer?"
 result = qa({"query": query})
 
 
