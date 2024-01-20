@@ -8,9 +8,11 @@ CHANNELS = 2
 RATE = 44100
 CHUNK = 1024
 RECORD_SECONDS = 5
-FILE_PATH = "/home/guilherme/Documents/GitHub/Tese/Disease_Dataset_Playground/Datasets/Speech-to-text/recorded_audio.wav"
+FILE_PATH = "/home/guilherme/Documents/Github/Tese/Disease_Dataset_Playground/Datasets/Speech-to-text/recorded_audio.wav"
 
-audio = pyaudio.PyAudio()
+# Use threading.Event for thread-safe signaling.
+is_recording = threading.Event()
+is_recording.set()  # Set the event to start recording.
 
 def record_audio(file_path):
     stream = audio.open(format=FORMAT, channels=CHANNELS,
@@ -19,9 +21,14 @@ def record_audio(file_path):
     frames = []
 
     print("Recording... Press Enter to stop.")
-    while is_recording:
-        data = stream.read(CHUNK)
-        frames.append(data)
+    while is_recording.is_set():
+        try:
+            data = stream.read(CHUNK, exception_on_overflow=False)
+            frames.append(data)
+        except IOError as e:
+            # If buffer overflow, you can skip and continue or do something else.
+            print("Buffer overflow occurred. Skipping this chunk.")
+            continue
 
     print("Finished recording.")
 
