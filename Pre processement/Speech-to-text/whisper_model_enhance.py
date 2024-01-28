@@ -7,6 +7,7 @@ import time
 import soundfile as sf
 import subprocess
 import re
+import os
 
 def get_audio_duration(path):
     # Use FFmpeg to get the duration of the audio file
@@ -35,8 +36,16 @@ def transcribe():
     result = model.transcribe(path, fp16=False)
     print(f' Language: {result["language"]} \n Text: \n{result["text"]}\n')
 
+    # Replace the audio file extension with .txt for the output file
+    text_file_path = os.path.splitext(path)[0] + ".txt"
+
+    # Write the transcription to the text file
+    with open(text_file_path, 'w') as text_file:
+        text_file.write(f'{result["text"]}')
+
     progress_bar.n = audio_duration  # Ensure the progress bar completes
     progress_bar.close()
+
 
 transcribe_thread = threading.Thread(target=transcribe)
 transcribe_thread.start()
