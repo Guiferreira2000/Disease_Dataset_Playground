@@ -10,8 +10,6 @@ def compute_relatedness(code1, code2):
     if not isinstance(code1, str) or not isinstance(code2, str):
         return 0
 
-
-
     # Check if codes are exactly the same
     if code1 == code2:
         return 1.0
@@ -33,7 +31,7 @@ def compute_relatedness(code1, code2):
             common_prefix_length += 1
         else:
             break
-    
+
     # Add additional weight if first four characters are same
     if code1[:4] == code2[:4]:
         common_prefix_length += 1
@@ -42,7 +40,6 @@ def compute_relatedness(code1, code2):
         denominator = max(len(code1), len(code2))
 
     return common_prefix_length / denominator
-
 
 def compute_relatedness_matrix(symptoms_list):
     matrix = []

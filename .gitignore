@@ -16,3 +16,6 @@ Dataset_accuracy_06_08_2023
 *.vtt
 *.pyc
 *.pkl
+*.h5
+
+!severity_scores.json
